@@ -39,7 +39,9 @@ public class DatabaseConnect implements IUserService {
         return connection;
     }
 
-    /** Nhập vào một bản ghi cho bảng users */
+    /**
+     * Nhập vào một bản ghi cho bảng users
+     */
     @Override
     public void insertUser(User user) throws SQLException {
         System.out.println(INSERT_USERS_SQL);
@@ -47,19 +49,21 @@ public class DatabaseConnect implements IUserService {
         try (
                 Connection connection = getConnection();
                 PreparedStatement preparedStatement = connection.prepareStatement(INSERT_USERS_SQL);
-        ){
-            preparedStatement.setString(1,user.getName());
-            preparedStatement.setString(2,user.getEmail());
-            preparedStatement.setString(3,user.getCountry());
+        ) {
+            preparedStatement.setString(1, user.getName());
+            preparedStatement.setString(2, user.getEmail());
+            preparedStatement.setString(3, user.getCountry());
             System.out.println(preparedStatement);
 
             preparedStatement.executeUpdate();
-        }catch (SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    /** Lấy ra bản ghi của người dùng có id tương ứng */
+    /**
+     * Lấy ra bản ghi của người dùng có id tương ứng
+     */
     @Override
     public User selectUser(int id) {
         User user = null;
@@ -121,53 +125,107 @@ public class DatabaseConnect implements IUserService {
         try (
                 Connection connection = getConnection();
                 PreparedStatement preparedStatement = connection.prepareStatement(DELETE_USERS_SQL);
-        ){
+        ) {
             System.out.println(preparedStatement);
-            preparedStatement.setInt(1,id);
-            rowDeleted = preparedStatement.executeUpdate()>0;
-            System.out.println("Xóa thành công: "+rowDeleted);
+            preparedStatement.setInt(1, id);
+            rowDeleted = preparedStatement.executeUpdate() > 0;
+            System.out.println("Xóa thành công: " + rowDeleted);
         }
         return rowDeleted;
     }
 
-    /** Cập nhật bản ghi trong bảng users */
+    /**
+     * Cập nhật bản ghi trong bảng users
+     */
     @Override
     public boolean updateUser(User user) throws SQLException {
         boolean rowUpdated;
         try (
                 Connection connection = getConnection();
                 PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_USERS_SQL);
-                ){
+        ) {
             System.out.println(UPDATE_USERS_SQL);
-            preparedStatement.setString(1,user.getName());
-            preparedStatement.setString(2,user.getEmail());
-            preparedStatement.setString(3,user.getCountry());
-            preparedStatement.setInt(4,user.getId());
+            preparedStatement.setString(1, user.getName());
+            preparedStatement.setString(2, user.getEmail());
+            preparedStatement.setString(3, user.getCountry());
+            preparedStatement.setInt(4, user.getId());
 
             rowUpdated = preparedStatement.executeUpdate() > 0;
-            System.out.println("Cập nhật thành công: "+rowUpdated);
+            System.out.println("Cập nhật thành công: " + rowUpdated);
         }
         return rowUpdated;
     }
 
+    /**
+     * Tim kiem ban ghi theo cac truoc cua bang
+     */
+//    @Override
+//    public User search(String value) {
+//        DatabaseConnect databaseConnect = new DatabaseConnect();
+//        ArrayList<User> userArrayList = (ArrayList<User>) databaseConnect.selectAllUsers();
+//
+//        for (User user : userArrayList) {
+//            if (
+//                    Integer.toString(user.getId()).equals(value) ||
+//                            user.getName().toLowerCase().contains(value.toLowerCase()) ||
+//                            user.getEmail().toLowerCase().contains(value.toLowerCase()) ||
+//                            user.getCountry().toLowerCase().contains(value.toLowerCase())
+//            ) {
+//                return user;
+//            }
+//        }
+//        return null;
+//    }
     @Override
-    public User search(String value) {
+    public List<User> search(String value) {
         DatabaseConnect databaseConnect = new DatabaseConnect();
         ArrayList<User> userArrayList = (ArrayList<User>) databaseConnect.selectAllUsers();
 
+        List<User> userList = new ArrayList<>();
+
+        /** Gọi tới hàm xóa bỏ khoảng trắng*/
+        value = getValue(value);
+
+        //tìm kiếm
         for (User user : userArrayList) {
-            if (
-                    Integer.toString(user.getId()).equals(value) ||
-                            user.getName().toLowerCase().contains(value.toLowerCase()) ||
-                            user.getEmail().toLowerCase().contains(value.toLowerCase()) ||
-                            user.getCountry().toLowerCase().contains(value.toLowerCase())
+            if (Integer.toString(user.getId()).equals(value) ||
+                    user.getName().toLowerCase().contains(value.toLowerCase()) ||
+                    user.getEmail().toLowerCase().contains(value.toLowerCase()) ||
+                    user.getCountry().toLowerCase().contains(value.toLowerCase())
             ) {
-                return user;
+                userList.add(user);
             }
         }
-        return null;
+        return userList;
     }
 
+    /**
+     * Xóa bỏ tất cả các khoảng trắng đầu và cuối khi tìm kiếm một giá trị bất kỳ
+     */
+    private String getValue(String value) {
+        int firstIndex = 0;
+        int lastIndex = value.length() - 1;
+        if (value.charAt(0) == ' ' || value.charAt(value.length() - 1) == ' ') {
+            for (int i = 0; i < value.length(); i++) {
+                if (value.charAt(i) != ' ') {
+                    firstIndex = i;
+                    for (int j = value.length() - 1; j >= 0; j--) {
+                        if (value.charAt(j) != ' ') {
+                            lastIndex = j;
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+            value = value.substring(firstIndex, lastIndex);
+        }
+        return value;
+    }
+
+    /**
+     * In ra các ngoại lệ bắt gặp
+     */
     private void printSQLException(SQLException ex) {
         for (Throwable e : ex) {
             if (e instanceof SQLException) {

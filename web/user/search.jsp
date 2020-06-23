@@ -30,13 +30,15 @@
         <th>Edit</th>
         <th>Delete</th>
     </tr>
+    <c:forEach items="${requestScope['users']}" var="user">
         <tr>
-            <td>${requestScope['user'].getName()}</td>
-            <td>${requestScope['user'].getEmail()}</td>
-            <td>${requestScope['user'].getCountry()}</td>
-            <td><a href="/users?action=edit&id=${requestScope['user'].getId()}"><button type="button">Edit</button></a></td>
-            <td><a href="/users?action=delete&id=${requestScope['user'].getId()}"><button type="button">Delete</button></a></td>
+            <td>${user.getName()}</td>
+            <td>${user.getEmail()}</td>
+            <td>${user.getCountry()}</td>
+            <td><a href="/users?action=edit&id=${user.getId()}"><button type="button">Edit</button></a></td>
+            <td><a href="/users?action=delete&id=${user.getId()}"><button type="button">Delete</button></a></td>
         </tr>
+    </c:forEach>
 </table>
 </body>
 </html>

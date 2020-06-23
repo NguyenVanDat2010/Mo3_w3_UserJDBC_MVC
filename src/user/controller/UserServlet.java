@@ -47,17 +47,20 @@ public class UserServlet extends HttpServlet {
         }
 
     }
-
+    /** Tìm kiếm và đưa ra các bản ghi bao gồm giá trị cần tìm*/
     private void searchUser(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String value = request.getParameter("searchValue");
 
-        User userSearch=this.userService.search(value);
+//        User userSearch=this.userService.search(value);
+
+        List<User> userSearch = this.userService.search(value);
+
         RequestDispatcher dispatcher;
 
         if (userSearch == null){
             dispatcher = request.getRequestDispatcher("error-404.jsp");
         }else {
-            request.setAttribute("user",userSearch);
+            request.setAttribute("users",userSearch);
             dispatcher = request.getRequestDispatcher("user/search.jsp");
         }
         dispatcher.forward(request, response);

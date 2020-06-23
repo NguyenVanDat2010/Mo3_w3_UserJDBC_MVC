@@ -22,5 +22,8 @@ public interface IUserService {
     boolean updateUser(User user) throws SQLException;
 
     /** Tìm kiếm một bản ghi thông qua trường bất kỳ*/
-    User search(String value);
+//    User search(String value);
+
+    /** Tìm kiếm tất cả các bản ghi có chứa giá trị cần tìm kiếm thông qua trường bất kỳ*/
+    List<User> search(String value);
 }
