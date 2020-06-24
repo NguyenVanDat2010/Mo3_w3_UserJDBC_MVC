@@ -457,4 +457,55 @@ public class DatabaseConnect implements IUserService {
             throwables.printStackTrace();
         }
     }
+
+    /** Thực thi SQL có sử dụng Transaction */
+    @Override
+    public void insertUpdateUseTransaction() {
+        try (Connection conn = getConnection();
+             Statement statement = conn.createStatement();
+             PreparedStatement psInsert = conn.prepareStatement(SQL_INSERT);
+             PreparedStatement psUpdate = conn.prepareStatement(SQL_UPDATE))
+        {
+            statement.execute(SQL_TABLE_DROP);
+            statement.execute(SQL_TABLE_CREATE);
+
+            // start transaction block
+            conn.setAutoCommit(false); // default true
+
+            // Run list of insert commands
+            psInsert.setString(1, "Quynh");
+            psInsert.setBigDecimal(2, new BigDecimal(10));
+            psInsert.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now()));
+            psInsert.execute();
+
+            psInsert.setString(1, "Ngan");
+            psInsert.setBigDecimal(2, new BigDecimal(20));
+            psInsert.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now()));
+            psInsert.execute();
+
+            // Run list of update commands
+            // below line caused error, test transaction
+            // org.postgresql.util.PSQLException: No value specified for parameter 1.
+
+            /** Nếu sai bất kỳ 1 truy vấn nào trong "conn.setAutoCommit(false); tới conn.setAutoCommit(true);"
+             * (vd: psUpdate.setBigDecimal tại 2) thì các câu truy vấn sẽ ko được cập nhật thay đổi*/
+//            psUpdate.setBigDecimal(2, new BigDecimal(999.99));
+
+            psUpdate.setBigDecimal(1, new BigDecimal(999.99));
+            psUpdate.setString(2, "Quynh");
+            psUpdate.execute();
+
+            // end transaction block, commit changes
+            conn.commit();
+
+            // good practice to set it back to default true
+            conn.setAutoCommit(true);
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+
 }

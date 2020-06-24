@@ -146,6 +146,10 @@ public class UserServlet extends HttpServlet {
                 case "test-without-tran":
                     testWithoutTran(request, response);
                     break;
+                    //Thực thi SQL có sử dụng Transaction
+                case "test-use-tran":
+                    testUseTran(request, response);
+                    break;
                 default:
                     listUser(request, response);
                     break;
@@ -154,6 +158,10 @@ public class UserServlet extends HttpServlet {
             throwables.printStackTrace();
         }
 
+    }
+
+    private void testUseTran(HttpServletRequest request, HttpServletResponse response) {
+        this.userService.insertUpdateUseTransaction();
     }
 
     private void testWithoutTran(HttpServletRequest request, HttpServletResponse response) {

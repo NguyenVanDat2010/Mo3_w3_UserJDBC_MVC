@@ -36,9 +36,12 @@ public interface IUserService {
     //procedure
     void insertUserStore(User user) throws SQLException;
 
-    //Thêm người dùng sử dụng Transaction
+    /**Thêm người dùng sử dụng Transaction*/
     void addUserTransaction(User user, int[] permission);
 
     //Thực thi SQL không sử dụng Transaction
     void insertUpdateWithoutTransaction();
+
+    //Thực thi SQL có sử dụng Transaction
+    void insertUpdateUseTransaction();
 }
