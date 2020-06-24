@@ -21,6 +21,9 @@
     <input type="submit" name="search" value="Search user">
 </form>
 
+
+
+
 <table>
     <tr>
         <th>Name</th>
@@ -38,6 +41,16 @@
             <td><a href="/users?action=delete&id=${user.getId()}"><button type="button">Delete</button></a></td>
         </tr>
     </c:forEach>
+    <tr>
+        <select name="sortBy">
+            <option>Choose sort by</option>
+            <option value="id">Id</option>
+            <option value="name">Name</option>
+            <option value="email">Email</option>
+            <option value="country">Country</option>
+        </select>
+        <a href="/users?action=sort"><button type="submit">Sort</button></a>
+    </tr>
 </table>
 </body>
 </html>

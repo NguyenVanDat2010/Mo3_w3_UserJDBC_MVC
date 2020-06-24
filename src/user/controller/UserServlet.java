@@ -17,7 +17,12 @@ import java.util.UUID;
 
 @WebServlet(name = "UserServlet",urlPatterns = "/users")
 public class UserServlet extends HttpServlet {
-    IUserService userService = new DatabaseConnect();
+//    IUserService userService = new DatabaseConnect();
+
+    private IUserService userService;
+    public void init() {
+        userService = new DatabaseConnect();
+    }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
@@ -90,7 +95,10 @@ public class UserServlet extends HttpServlet {
 //        int id = Integer.parseInt(request.getParameter("id"));
 
         User newUser = new User(name,email,country);
-        this.userService.insertUser(newUser);
+
+//        this.userService.insertUser(newUser);
+        this.userService.insertUserStore(newUser); //sử dụng PROCEDURE
+
         RequestDispatcher dispatcher = request.getRequestDispatcher("user/create.jsp");
         request.setAttribute("message", "New user was created");
         dispatcher.forward(request, response);
@@ -115,7 +123,6 @@ public class UserServlet extends HttpServlet {
         if (action == null) {
             action = "";
         }
-
         try {
             switch (action) {
                 case "create":
@@ -127,6 +134,8 @@ public class UserServlet extends HttpServlet {
                 case "delete":
                     deleteUser(request, response);
                     break;
+                case "sort":
+                    sortUserBy(request,response);
                 default:
                     listUser(request, response);
                     break;
@@ -151,6 +160,20 @@ public class UserServlet extends HttpServlet {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void sortUserBy(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String operator = request.getParameter("sortBy");
+
+        System.out.println(operator);
+
+        List<User> userList = this.userService.sortUsers(operator);
+
+        request.setAttribute("users",userList);
+
+        RequestDispatcher dispatcher = request.getRequestDispatcher("user/list.jsp");
+        dispatcher.forward(request, response);
+//        response.sendRedirect("/users");
     }
 
     /** Xóa một bản ghi trong bảng Users bằng id*/
@@ -179,7 +202,9 @@ public class UserServlet extends HttpServlet {
     /** Hiển thị form edit users */
     private void showEditForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         int id = Integer.parseInt(request.getParameter("id"));
-        User userExisting = this.userService.selectUser(id);
+
+//        User userExisting = this.userService.selectUser(id);
+        User userExisting = this.userService.getUserById(id);//sử dụng PROCEDURE
 
         RequestDispatcher dispatcher = request.getRequestDispatcher("user/edit.jsp");
         request.setAttribute("user",userExisting);

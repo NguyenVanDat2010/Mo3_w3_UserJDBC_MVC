@@ -26,4 +26,10 @@ public interface IUserService {
 
     /** Tìm kiếm tất cả các bản ghi có chứa giá trị cần tìm kiếm thông qua trường bất kỳ*/
     List<User> search(String value);
+
+    List<User> sortUsers(String sortBy);
+
+    User getUserById(int id);
+
+    void insertUserStore(User user) throws SQLException;
 }

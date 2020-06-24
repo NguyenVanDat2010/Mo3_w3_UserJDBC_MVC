@@ -16,6 +16,7 @@ public class DatabaseConnect implements IUserService {
     private static final String INSERT_USERS_SQL = "INSERT INTO users" + "  (name, email, country) VALUES " + " (?, ?, ?);";
     private static final String UPDATE_USERS_SQL = "update users set name = ?,email= ?, country =? where id = ?;";
     private static final String DELETE_USERS_SQL = "delete from users where id = ?;";
+    private static final String SORT_USERS_SQL = "select * from users order by";
 
     public DatabaseConnect() {
     }
@@ -157,7 +158,7 @@ public class DatabaseConnect implements IUserService {
     }
 
     /**
-     * Tim kiem ban ghi theo cac truoc cua bang
+     * Tim kiem ban ghi theo cac truong cua bang
      */
 //    @Override
 //    public User search(String value) {
@@ -199,26 +200,57 @@ public class DatabaseConnect implements IUserService {
         return userList;
     }
 
+    public List<User> sortUsers(String sortBy){
+        if (!sortBy.equals("id") && !sortBy.equals("name") && !sortBy.equals("email") && !sortBy.equals("country")){
+            sortBy = "id";
+        }
+//        String SORT_ALL_USERS = "SELECT * FROM users ORDER BY"+sortBy+"ASC";
+
+        List<User> users = new ArrayList<>();
+        try (Connection connection = getConnection()){
+
+            Statement statement = connection.createStatement();
+
+            System.out.println(statement);
+            ResultSet rs = statement.executeQuery(SORT_USERS_SQL+sortBy+"ASC");
+            System.out.println(rs);
+            System.out.println(rs.getFetchSize());
+
+            while (rs.next()) {
+                int id = rs.getInt("id");
+                String name = rs.getString("name");
+                String email = rs.getString("email");
+                String country = rs.getString("country");
+                users.add(new User(id, name, email, country));
+            }
+        } catch (SQLException e) {
+            printSQLException(e);
+        }
+        return users;
+    }
+
     /**
      * Xóa bỏ tất cả các khoảng trắng đầu và cuối khi tìm kiếm một giá trị bất kỳ
      */
     private String getValue(String value) {
-        int firstIndex = 0;
-        int lastIndex = value.length() - 1;
+//        int firstIndex = 0;
+//        int lastIndex = value.length() - 1;
         if (value.charAt(0) == ' ' || value.charAt(value.length() - 1) == ' ') {
-            for (int i = 0; i < value.length(); i++) {
-                if (value.charAt(i) != ' ') {
-                    firstIndex = i;
-                    for (int j = value.length() - 1; j >= 0; j--) {
-                        if (value.charAt(j) != ' ') {
-                            lastIndex = j;
-                            break;
-                        }
-                    }
-                    break;
-                }
-            }
-            value = value.substring(firstIndex, lastIndex);
+            value = value.trim(); //xóa khoảng trắng ở đầu và cuối thôi
+
+//            for (int i = 0; i < value.length(); i++) {
+//                if (value.charAt(i) != ' ') {
+//                    firstIndex = i;
+//                    for (int j = value.length() - 1; j >= 0; j--) {
+//                        if (value.charAt(j) != ' ') {
+//                            lastIndex = j;
+//                            break;
+//                        }
+//                    }
+//                    break;
+//                }
+//            }
+//            value = value.substring(firstIndex, lastIndex);
         }
         return value;
     }
@@ -242,9 +274,59 @@ public class DatabaseConnect implements IUserService {
         }
     }
 
-
 //    public static void main(String[] args) {
 //        DatabaseConnect databaseConnect = new DatabaseConnect();
 //        databaseConnect.getConnection();
 //    }
+
+
+    @Override
+    public User getUserById(int id) {
+        User user = null;
+        String query = "{CALL get_user_by_id(?)}";
+
+        // Step 1: Tạo kết nối
+        try (
+                Connection connection = getConnection();
+                // Step 2:Create a statement using connection object
+                CallableStatement callableStatement = connection.prepareCall(query)
+                ) {
+            callableStatement.setInt(1, id);
+
+            // Step 3: Thực hiện câu truy vấn lưu vào ResultSet
+            ResultSet rs = callableStatement.executeQuery();
+
+            // Step 4: Process the ResultSet object.
+            while (rs.next()) {
+                String name = rs.getString("name");
+                String email = rs.getString("email");
+                String country = rs.getString("country");
+                user = new User(id, name, email, country);
+            }
+        } catch (SQLException e) {
+            printSQLException(e);
+        }
+        return user;
+    }
+
+    @Override
+    public void insertUserStore(User user) throws SQLException {
+        String query = "{CALL insert_user(?,?,?)}";
+
+        // try-with-resource statement will auto close the connection.
+        try (
+                Connection connection = getConnection();
+                CallableStatement callableStatement = connection.prepareCall(query)
+             ) {
+            callableStatement.setString(1, user.getName());
+            callableStatement.setString(2, user.getEmail());
+            callableStatement.setString(3, user.getCountry());
+
+            System.out.println(callableStatement);
+
+            callableStatement.executeUpdate();
+        } catch (SQLException e) {
+            printSQLException(e);
+        }
+    }
 }
