@@ -29,7 +29,11 @@ public interface IUserService {
 
     List<User> sortUsers(String sortBy);
 
+    //Procedure
     User getUserById(int id);
-
+    //procedure
     void insertUserStore(User user) throws SQLException;
+
+    //Transaction
+    void addUserTransaction(User user, int[] permission);
 }

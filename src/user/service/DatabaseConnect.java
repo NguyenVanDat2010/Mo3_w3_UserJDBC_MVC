@@ -329,4 +329,75 @@ public class DatabaseConnect implements IUserService {
             printSQLException(e);
         }
     }
+
+    @Override
+    public void addUserTransaction(User user, int[] permissions) {
+        Connection conn = null;
+
+        // để chèn người dùng mới
+        PreparedStatement pstmt = null;
+
+        // để cấp quyền cho người dùng
+        PreparedStatement pstmtAssignment  = null;
+
+        // để lấy id người dùng
+        ResultSet rs = null;
+        try {
+            conn = getConnection();
+            // set auto commit to false
+            conn.setAutoCommit(false);
+
+            // Insert user
+            pstmt = conn.prepareStatement(INSERT_USERS_SQL, Statement.RETURN_GENERATED_KEYS);
+            pstmt.setString(1, user.getName());
+            pstmt.setString(2, user.getEmail());
+            pstmt.setString(3, user.getCountry());
+
+            int rowAffected = pstmt.executeUpdate();
+
+            // get user id
+            rs = pstmt.getGeneratedKeys(); //Tạo khóa tự động tăng
+            int userId = 0;
+            if (rs.next())
+                //trả về dữ liệu của chỉ mục cột được chỉ định của hàng hiện tại như int.
+                userId = rs.getInt(1);
+
+            // trong trường hợp thao tác chèn thành công, gán quyền cho người dùng
+            if (rowAffected == 1) {
+
+                // gán quyền truy cập cho người dùng
+                String sqlPivot = "INSERT INTO user_permission(user_id,permission_id) "
+                        + "VALUES(?,?)";
+
+                pstmtAssignment  = conn.prepareStatement(sqlPivot);
+                for (int permissionId : permissions) {
+                    pstmtAssignment.setInt(1, userId); //cố định
+                    pstmtAssignment.setInt(2, permissionId); //thay đổi theo mảng
+                    pstmtAssignment.executeUpdate();
+                }
+                conn.commit();
+            } else {
+                conn.rollback();
+            }
+
+        } catch (SQLException ex) {
+            // roll back the transaction
+            try {
+                if (conn != null)
+                    conn.rollback();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+            }
+            System.out.println(ex.getMessage());
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (pstmt != null) pstmt.close();
+                if (pstmtAssignment != null) pstmtAssignment.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+    }
 }

@@ -136,6 +136,10 @@ public class UserServlet extends HttpServlet {
                     break;
                 case "sort":
                     sortUserBy(request,response);
+                    break;
+                case "permission":
+                    addUserPermission(request, response);
+                    break;
                 default:
                     listUser(request, response);
                     break;
@@ -144,6 +148,14 @@ public class UserServlet extends HttpServlet {
             throwables.printStackTrace();
         }
 
+    }
+
+    private void addUserPermission(HttpServletRequest request, HttpServletResponse response) {
+        User user = new User("Kien", "kienhoang@gmail.com", "vn");
+
+        int[] permissions = {1, 2, 4};
+
+        this.userService.addUserTransaction(user, permissions);
     }
 
     /** Hiển thị ra danh sách users của database */
