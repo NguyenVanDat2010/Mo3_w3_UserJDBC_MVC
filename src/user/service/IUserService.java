@@ -27,13 +27,18 @@ public interface IUserService {
     /** Tìm kiếm tất cả các bản ghi có chứa giá trị cần tìm kiếm thông qua trường bất kỳ*/
     List<User> search(String value);
 
+    /** Sắp xếp*/
     List<User> sortUsers(String sortBy);
 
     //Procedure
     User getUserById(int id);
+
     //procedure
     void insertUserStore(User user) throws SQLException;
 
-    //Transaction
+    //Thêm người dùng sử dụng Transaction
     void addUserTransaction(User user, int[] permission);
+
+    //Thực thi SQL không sử dụng Transaction
+    void insertUpdateWithoutTransaction();
 }

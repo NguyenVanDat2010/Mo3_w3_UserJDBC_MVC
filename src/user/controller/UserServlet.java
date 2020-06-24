@@ -97,6 +97,7 @@ public class UserServlet extends HttpServlet {
         User newUser = new User(name,email,country);
 
 //        this.userService.insertUser(newUser);
+        /** Gọi MySql Stored Procedures từ JDBCAssignment */
         this.userService.insertUserStore(newUser); //sử dụng PROCEDURE
 
         RequestDispatcher dispatcher = request.getRequestDispatcher("user/create.jsp");
@@ -137,8 +138,13 @@ public class UserServlet extends HttpServlet {
                 case "sort":
                     sortUserBy(request,response);
                     break;
+                    //MySql JDBC TransactionAssignment
                 case "permission":
                     addUserPermission(request, response);
+                    break;
+                    //Thực thi SQL không sử dụng Transaction
+                case "test-without-tran":
+                    testWithoutTran(request, response);
                     break;
                 default:
                     listUser(request, response);
@@ -148,6 +154,10 @@ public class UserServlet extends HttpServlet {
             throwables.printStackTrace();
         }
 
+    }
+
+    private void testWithoutTran(HttpServletRequest request, HttpServletResponse response) {
+        this.userService.insertUpdateWithoutTransaction();
     }
 
     private void addUserPermission(HttpServletRequest request, HttpServletResponse response) {
@@ -216,6 +226,7 @@ public class UserServlet extends HttpServlet {
         int id = Integer.parseInt(request.getParameter("id"));
 
 //        User userExisting = this.userService.selectUser(id);
+        /**Gọi MySql Stored Procedures từ JDBCAssignment*/
         User userExisting = this.userService.getUserById(id);//sử dụng PROCEDURE
 
         RequestDispatcher dispatcher = request.getRequestDispatcher("user/edit.jsp");

@@ -2,7 +2,9 @@ package user.service;
 
 import user.model.User;
 
+import java.math.BigDecimal;
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +19,18 @@ public class DatabaseConnect implements IUserService {
     private static final String UPDATE_USERS_SQL = "update users set name = ?,email= ?, country =? where id = ?;";
     private static final String DELETE_USERS_SQL = "delete from users where id = ?;";
     private static final String SORT_USERS_SQL = "select * from users order by";
+
+    private static final String SQL_INSERT = "INSERT INTO EMPLOYEE (NAME, SALARY, CREATED_DATE) VALUES (?,?,?)";
+    private static final String SQL_UPDATE = "UPDATE EMPLOYEE SET SALARY=? WHERE NAME=?";
+    private static final String SQL_TABLE_CREATE = "CREATE TABLE EMPLOYEE"
+            + "("
+            + " ID serial,"
+            + " NAME varchar(100) NOT NULL,"
+            + " SALARY numeric(15, 2) NOT NULL,"
+            + " CREATED_DATE timestamp,"
+            + " PRIMARY KEY (ID)"
+            + ")";
+    private static final String SQL_TABLE_DROP = "DROP TABLE IF EXISTS EMPLOYEE";
 
     public DatabaseConnect() {
     }
@@ -280,6 +294,7 @@ public class DatabaseConnect implements IUserService {
 //    }
 
 
+    /** Gọi MySql Stored Procedures từ JDBCAssignment */
     @Override
     public User getUserById(int id) {
         User user = null;
@@ -309,6 +324,7 @@ public class DatabaseConnect implements IUserService {
         return user;
     }
 
+    /** Gọi MySql Stored Procedures từ JDBCAssignment */
     @Override
     public void insertUserStore(User user) throws SQLException {
         String query = "{CALL insert_user(?,?,?)}";
@@ -330,6 +346,7 @@ public class DatabaseConnect implements IUserService {
         }
     }
 
+    /** MySql JDBC TransactionAssignment */
     @Override
     public void addUserTransaction(User user, int[] permissions) {
         Connection conn = null;
@@ -398,6 +415,46 @@ public class DatabaseConnect implements IUserService {
             } catch (SQLException e) {
                 System.out.println(e.getMessage());
             }
+        }
+    }
+
+    /** Thực thi SQL không sử dụng Transaction */
+    @Override
+    public void insertUpdateWithoutTransaction() {
+        try (
+                Connection connection = getConnection();
+                Statement statement = connection.createStatement();
+                PreparedStatement psInsert = connection.prepareStatement(SQL_INSERT);
+                PreparedStatement psUpdate = connection.prepareStatement(SQL_UPDATE);
+        ){
+            statement.execute(SQL_TABLE_DROP);
+            statement.execute(SQL_TABLE_CREATE);
+
+            psInsert.setString(1,"Quynh");
+            psInsert.setBigDecimal(2,new BigDecimal(10));
+            psInsert.setTimestamp(3,Timestamp.valueOf(LocalDateTime.now()));
+            psInsert.execute();
+
+            psInsert.setString(1,"Ngan");
+            psInsert.setBigDecimal(2,new BigDecimal(20));
+            psInsert.setTimestamp(3,Timestamp.valueOf(LocalDateTime.now()));
+            psInsert.execute();
+
+            // Run list of update commands
+            // below line caused error, test transaction
+            // org.postgresql.util.PSQLException: No value specified for parameter 1.
+
+            /** Xét parameterIndex theo cột trong câu truy vấn mình gọi , ở đây là truy vấn update
+             * cột 1 là salary, cột 2 là name. Vậy ở câu psUpdate.setBigDecimal dưới lương để ở cột 2 là sai*/
+            psUpdate.setBigDecimal(2, new BigDecimal(999.99));
+
+            //psUpdate.setBigDecimal(1, new BigDecimal(999.99));
+            psUpdate.setString(2, "Quynh");
+
+            psUpdate.execute();
+
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
         }
     }
 }
