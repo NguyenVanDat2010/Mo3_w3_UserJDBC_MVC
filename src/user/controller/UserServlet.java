@@ -102,7 +102,6 @@ public class UserServlet extends HttpServlet {
 
         RequestDispatcher dispatcher = request.getRequestDispatcher("user/create.jsp");
         request.setAttribute("message", "New user was created");
-        dispatcher.forward(request, response);
 
         try {
             dispatcher.forward(request, response);

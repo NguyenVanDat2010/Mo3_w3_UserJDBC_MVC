@@ -21,9 +21,6 @@
     <input type="submit" name="search" value="Search user">
 </form>
 
-
-
-
 <table>
     <tr>
         <th>Name</th>
